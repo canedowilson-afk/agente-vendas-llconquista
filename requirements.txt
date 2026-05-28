@@ -1,2 +1,2 @@
-﻿anthropic
-python-dotenv
+python-dotenv==1.0.1
+anthropic==0.25.1
