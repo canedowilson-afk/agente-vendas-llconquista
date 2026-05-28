@@ -1,0 +1,6 @@
+.env
+__pycache__/
+*.sqlite
+*.log
+watcher_state.json
+evolution-api/
