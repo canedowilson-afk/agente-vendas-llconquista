@@ -3,10 +3,16 @@
 watcher.py — Monitora WhatsApp via Evolution API
 """
 
+import sys
+import io
+
+# Forçar UTF-8 no stdout para evitar erros com emojis no Windows
+if sys.platform == "win32":
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+
 import json
 import time
 import logging
-import sys
 import os
 import traceback
 import urllib.request
