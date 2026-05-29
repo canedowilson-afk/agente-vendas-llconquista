@@ -49,7 +49,8 @@ def evolution_request(endpoint: str, method: str = "GET", data: dict = None) -> 
     url = f"{EVOLUTION_URL}{endpoint}"
     headers = {
         "apikey": EVOLUTION_API_KEY,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"
     }
     req = urllib.request.Request(
         url,
