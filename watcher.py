@@ -22,7 +22,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 
 # Carregar variáveis de ambiente do .env na pasta meu-agente
-load_dotenv(Path(__file__).parent / ".env")
+load_dotenv()
 
 logging.basicConfig(
     level=logging.INFO,
