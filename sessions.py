@@ -8,7 +8,7 @@ import time
 from pathlib import Path
 from datetime import datetime
 
-DB_PATH = Path.home() / "meu-agente" / "dados.sqlite"
+DB_PATH = Path("dados.sqlite")
 
 
 def _db():

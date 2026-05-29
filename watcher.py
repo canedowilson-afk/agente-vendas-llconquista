@@ -23,7 +23,7 @@ logging.basicConfig(
     format='%(asctime)s [%(levelname)s] %(message)s',
     handlers=[
         logging.StreamHandler(sys.stdout),
-        logging.FileHandler(Path.home() / "meu-agente" / "watcher.log", encoding='utf-8')
+        logging.FileHandler("watcher.log", encoding='utf-8')
     ]
 )
 logger = logging.getLogger(__name__)
@@ -37,7 +37,7 @@ EVOLUTION_API_KEY = os.getenv("EVOLUTION_API_KEY")
 INSTANCE_NAME = os.getenv("INSTANCE_NAME", "meu-agente")
 POLL_INTERVAL = 3
 
-STATE_FILE = Path.home() / "meu-agente" / "watcher_state.json"
+STATE_FILE = Path("watcher_state.json")
 
 def evolution_request(endpoint: str, method: str = "GET", data: dict = None) -> dict:
     url = f"{EVOLUTION_URL}{endpoint}"
