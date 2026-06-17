@@ -72,7 +72,7 @@ def test_anthropic(api_key):
 
     url = "https://api.anthropic.com/v1/messages"
     data = {
-        "model": "claude-opus-4-6",
+        "model": "claude-3-5-sonnet-20240620",
         "max_tokens": 50,
         "messages": [{"role": "user", "content": "Responda com 'IA funcionando!' apenas."}]
     }

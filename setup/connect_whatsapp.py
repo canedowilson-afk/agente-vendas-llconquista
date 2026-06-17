@@ -7,15 +7,24 @@ import time
 from pathlib import Path
 
 # Evolution API local — apikey padrão (definida no docker-compose)
-EVOLUTION_API_KEY = "your-api-key"  # substituído pelo install_evolution.py se necessário
+EVOLUTION_API_KEY = "wbpFcnxxIFw_lXfr"  # Chave encontrada no container Docker
 
 def _get_api_key():
     """Lê apikey do .env gerado pelo install_evolution.py, se existir."""
-    env_file = Path.home() / ".openclaw" / "evolution-api" / ".env"
+    # Tenta no diretório padrão do instalador
+    env_file = Path.home() / "meu-agente" / "evolution-api" / ".env"
     if env_file.exists():
         for line in env_file.read_text().splitlines():
-            if line.startswith("AUTHENTICATION_API_KEY="):
+            if line.startswith("API_KEY="):
                 return line.split("=", 1)[1].strip().strip('"')
+    
+    # Fallback para .openclaw (versões legadas ou alternativas)
+    legacy_file = Path.home() / ".openclaw" / "evolution-api" / ".env"
+    if legacy_file.exists():
+        for line in legacy_file.read_text().splitlines():
+            if line.startswith("AUTHENTICATION_API_KEY=") or line.startswith("API_KEY="):
+                return line.split("=", 1)[1].strip().strip('"')
+    
     # Fallback: tenta a apikey padrão da instalação existente
     return EVOLUTION_API_KEY
 
@@ -91,12 +100,19 @@ def main():
 
     if qr_data:
         # Salvar QR Code como imagem PNG e abrir no visualizador
-        import base64, subprocess, tempfile, os
+        import base64, subprocess, tempfile, os, sys
         img_path = Path(tempfile.gettempdir()) / "agente-qrcode.png"
         try:
             img_bytes = base64.b64decode(qr_data.split(",")[-1])
             img_path.write_bytes(img_bytes)
-            subprocess.Popen(["open", str(img_path)])
+            
+            if sys.platform == "win32":
+                os.startfile(img_path)
+            elif sys.platform == "darwin":
+                subprocess.Popen(["open", str(img_path)])
+            else:
+                subprocess.Popen(["xdg-open", str(img_path)])
+                
             print(f"   ✅ QR Code aberto na tela!")
             print(f"   📱 Abra o WhatsApp no celular → Configurações → Aparelhos Conectados → Conectar Aparelho")
         except Exception:
