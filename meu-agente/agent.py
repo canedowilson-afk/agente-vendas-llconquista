@@ -22,9 +22,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Configurações de IA e Clínica
-AI_PROVIDER = os.getenv("AI_PROVIDER", "anthropic")
-AI_MODEL = os.getenv("AI_MODEL", "claude-3-5-sonnet-20240620")
-AI_API_KEY = os.getenv("AI_API_KEY")
+AI_PROVIDER = os.getenv("AI_PROVIDER", "anthropic").strip('"')
+AI_MODEL = os.getenv("AI_MODEL", "claude-3-5-sonnet-20240620").strip('"')
+AI_API_KEY = os.getenv("AI_API_KEY", "").strip('"')
 
 # No contexto da Clínica, o checkout link é o WhatsApp para agendamento ou informações
 CHECKOUT_LINK = "https://wa.me/554391853957" 
