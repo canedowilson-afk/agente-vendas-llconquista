@@ -22,9 +22,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Configurações de IA e Clínica
-AI_PROVIDER = os.getenv("AI_PROVIDER", "anthropic").strip('"')
-AI_MODEL = os.getenv("AI_MODEL", "claude-3-5-sonnet-20240620").strip('"')
+AI_PROVIDER = os.getenv("AI_PROVIDER", "groq").strip('"')
+AI_MODEL = os.getenv("AI_MODEL", "llama-3.3-70b-versatile").strip('"')
 AI_API_KEY = os.getenv("AI_API_KEY", "").strip('"')
+
+print(f"--- INFO: Iniciando agente com provedor: {AI_PROVIDER} ---")
 
 # No contexto da Clínica, o checkout link é o WhatsApp para agendamento ou informações
 CHECKOUT_LINK = "https://wa.me/554391853957" 
@@ -132,15 +134,43 @@ TRIGGER_KEYWORDS = ["dentista", "consulta", "avaliação", "dente", "dra márcia
 # Importar lógica de sessões
 from sessions import init_db, load_session, save_session, create_lead, add_message, mark_checkout_sent
 
+def clean_messages(messages: list) -> list:
+    """
+    Garante que as mensagens:
+    1. Comecem com 'user'.
+    2. Alternem estritamente entre 'user' e 'assistant'.
+    """
+    cleaned = []
+    filtered = [m for m in messages if m["role"] in ["user", "assistant"]]
+
+    if not filtered: return []
+    while filtered and filtered[0]["role"] != "user":
+        filtered.pop(0)
+
+    if not filtered: return []
+
+    last_role = None
+    for msg in filtered:
+        if msg["role"] == last_role:
+            cleaned[-1]["content"] += "\n\n" + msg["content"]
+        else:
+            cleaned.append({"role": msg["role"], "content": msg["content"]})
+            last_role = msg["role"]
+    return cleaned
+
 def call_ai(messages: list, max_tokens: int = 512) -> str:
+    cleaned = clean_messages(messages)
+    if not cleaned:
+        return "Olá! Como posso ajudar você hoje? 😊"
+
     if AI_PROVIDER == "anthropic":
-        return call_anthropic(messages, max_tokens)
+        return call_anthropic(cleaned, max_tokens)
     elif AI_PROVIDER == "gemini":
-        return call_gemini(messages, max_tokens)
+        return call_gemini(cleaned, max_tokens)
     elif AI_PROVIDER == "groq":
-        return call_groq(messages, max_tokens)
+        return call_groq(cleaned, max_tokens)
     else:
-        return f"Provider {AI_PROVIDER} não configurado."
+        return "Desculpe, meu sistema está em manutenção. Volto logo! 😊"
 
 def call_groq(messages: list, max_tokens: int) -> str:
     url = "https://api.groq.com/openai/v1/chat/completions"
@@ -160,7 +190,8 @@ def call_groq(messages: list, max_tokens: int) -> str:
             result = json.loads(response.read())
             return result["choices"][0]["message"]["content"]
     except Exception as e:
-        return f"Erro Groq: {str(e)}"
+        print(f"Erro Groq: {e}")
+        return "Desculpe, tive um probleminha técnico. Pode repetir? 😊"
 
 def call_anthropic(messages: list, max_tokens: int) -> str:
     url = "https://api.anthropic.com/v1/messages"
@@ -181,21 +212,13 @@ def call_anthropic(messages: list, max_tokens: int) -> str:
         with urllib.request.urlopen(req, timeout=15) as response:
             result = json.loads(response.read())
             return result["content"][0]["text"]
-    except urllib.error.HTTPError as e:
-        error_body = e.read().decode()
-        return f"Erro Anthropic ({e.code}): {error_body}"
     except Exception as e:
-        return f"Erro na IA (Anthropic): {str(e)}"
+        print(f"Erro Anthropic: {e}")
+        return "Desculpe, tive um probleminha técnico. Pode repetir? 😊"
 
 def call_gemini(messages: list, max_tokens: int) -> str:
-    # Endpoint compatível com OpenAI do Gemini
     url = f"https://generativelanguage.googleapis.com/v1beta/openai/chat/completions?key={AI_API_KEY}"
-    
-    # Converter formato Anthropic para OpenAI/Gemini
-    gemini_messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-    for m in messages:
-        gemini_messages.append(m)
-        
+    gemini_messages = [{"role": "system", "content": SYSTEM_PROMPT}] + messages
     data = {
         "model": AI_MODEL,
         "messages": gemini_messages,
