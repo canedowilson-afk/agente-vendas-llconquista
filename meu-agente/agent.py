@@ -21,10 +21,17 @@ from dotenv import load_dotenv
 # Carregar variáveis de ambiente
 load_dotenv()
 
+def get_env(key: str, default: str = "") -> str:
+    val = os.getenv(key, default)
+    if val:
+        # Remove aspas duplas e simples que podem vir do Railway/Shell
+        return val.strip().strip('"').strip("'")
+    return default
+
 # Configurações de IA e Clínica
-AI_PROVIDER = os.getenv("AI_PROVIDER", "groq").strip('"')
-AI_MODEL = os.getenv("AI_MODEL", "llama-3.3-70b-versatile").strip('"')
-AI_API_KEY = os.getenv("AI_API_KEY", "").strip('"')
+AI_PROVIDER = get_env("AI_PROVIDER", "groq")
+AI_MODEL = get_env("AI_MODEL", "llama-3.3-70b-versatile")
+AI_API_KEY = get_env("AI_API_KEY", "")
 
 print(f"--- INFO: Iniciando agente com provedor: {AI_PROVIDER} ---")
 
