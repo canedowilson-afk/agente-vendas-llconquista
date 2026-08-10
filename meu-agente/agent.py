@@ -189,16 +189,21 @@ def call_groq(messages: list, max_tokens: int) -> str:
     }
     headers = {
         "Authorization": f"Bearer {AI_API_KEY}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     }
     req = urllib.request.Request(url, data=json.dumps(data).encode(), headers=headers, method="POST")
     try:
         with urllib.request.urlopen(req, timeout=15) as response:
             result = json.loads(response.read())
             return result["choices"][0]["message"]["content"]
+    except urllib.error.HTTPError as e:
+        error_body = e.read().decode()
+        print(f"Erro Groq (HTTP {e.code}): {error_body}")
+        return f"Erro Groq: Desculpe, tive um probleminha técnico (AI {e.code}). Pode repetir? 😊"
     except Exception as e:
         print(f"Erro Groq: {e}")
-        return "Desculpe, tive um probleminha técnico. Pode repetir? 😊"
+        return f"Erro Groq: Desculpe, tive um probleminha técnico. Pode repetir? 😊"
 
 def call_anthropic(messages: list, max_tokens: int) -> str:
     url = "https://api.anthropic.com/v1/messages"
@@ -219,9 +224,13 @@ def call_anthropic(messages: list, max_tokens: int) -> str:
         with urllib.request.urlopen(req, timeout=15) as response:
             result = json.loads(response.read())
             return result["content"][0]["text"]
+    except urllib.error.HTTPError as e:
+        error_body = e.read().decode()
+        print(f"Erro Anthropic (HTTP {e.code}): {error_body}")
+        return f"Erro Anthropic: Desculpe, tive um probleminha técnico (AI {e.code}). Pode repetir? 😊"
     except Exception as e:
         print(f"Erro Anthropic: {e}")
-        return "Desculpe, tive um probleminha técnico. Pode repetir? 😊"
+        return f"Erro Anthropic: Desculpe, tive um probleminha técnico. Pode repetir? 😊"
 
 def call_gemini(messages: list, max_tokens: int) -> str:
     url = f"https://generativelanguage.googleapis.com/v1beta/openai/chat/completions?key={AI_API_KEY}"
@@ -233,14 +242,21 @@ def call_gemini(messages: list, max_tokens: int) -> str:
         "temperature": 0.7
     }
     
-    headers = {"Content-Type": "application/json"}
+    headers = {
+        "Content-Type": "application/json",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
     req = urllib.request.Request(url, data=json.dumps(data).encode(), headers=headers, method="POST")
     try:
         with urllib.request.urlopen(req, timeout=20) as response:
             result = json.loads(response.read())
             return result["choices"][0]["message"]["content"]
+    except urllib.error.HTTPError as e:
+        error_body = e.read().decode()
+        print(f"Erro Gemini (HTTP {e.code}): {error_body}")
+        return f"Erro Gemini: {str(e)}"
     except Exception as e:
-        return f"Erro na IA (Gemini): {str(e)}"
+        return f"Erro Gemini: {str(e)}"
 
 def is_trigger(text: str) -> bool:
     # Configurado para responder a TODAS as mensagens
