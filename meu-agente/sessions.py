@@ -13,13 +13,20 @@ from dotenv import load_dotenv
 # Carregar variáveis de ambiente
 load_dotenv()
 
-# Configurações do Banco de Dados
+def get_env(key: str, default: str = "") -> str:
+    val = os.getenv(key, default)
+    if val:
+        # Remove aspas duplas e simples que podem vir do Railway/Shell
+        return val.strip().strip('"').strip("'")
+    return default
+
+# Configurações do Banco de Dados (via .env — nunca hardcode credenciais aqui)
 DB_CONFIG = {
-    "host": "shadeseekingbeardeddragon-postgres.cloudfy.live",
-    "port": "8085",
-    "database": "db",
-    "user": "postgres",
-    "password": "ASUMRROozQHhEXdgkjs6"
+    "host": get_env("DB_HOST"),
+    "port": get_env("DB_PORT"),
+    "database": get_env("DB_NAME"),
+    "user": get_env("DB_USER"),
+    "password": get_env("DB_PASS")
 }
 
 def get_connection():
